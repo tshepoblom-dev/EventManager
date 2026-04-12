@@ -46,7 +46,8 @@ class User extends Authenticatable
 
     public function sessions()
     {
-        return $this->belongsToMany(Session::class, 'session_speaker')
+        // Table is 'session_speakers' (plural) — matches the migration definition
+        return $this->belongsToMany(Session::class, 'session_speakers', 'user_id', 'event_session_id')
             ->withPivot('role')
             ->withTimestamps();
     }

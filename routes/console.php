@@ -1,8 +1,9 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+// Broadcast the live session every minute during event hours
+Schedule::command('sessions:highlight')->everyMinute();
+
+// Send reminder emails at 08:00 and thank-you emails daily
+Schedule::command('events:reminders')->dailyAt('08:00');

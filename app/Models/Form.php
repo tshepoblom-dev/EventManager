@@ -5,9 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Event;
-use App\Models\FormField;
-use App\Models\FormResponse;
 
 class Form extends Model
 {
@@ -21,22 +18,24 @@ class Form extends Model
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'is_active'       => 'boolean',
         'allow_anonymous' => 'boolean',
     ];
 
-    public function event()
+    public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
     }
 
-    public function fields()
+    public function fields(): HasMany
     {
+        // Relationship to Form_field model
         return $this->hasMany(Form_field::class);
     }
 
-    public function responses()
+    public function responses(): HasMany
     {
-        return $this->hasMany(Form_response::class);
+        // Class name is Form_Response (capital R) — must match exactly on case-sensitive filesystems
+        return $this->hasMany(Form_Response::class);
     }
 }

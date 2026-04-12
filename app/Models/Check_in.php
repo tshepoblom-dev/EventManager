@@ -6,7 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Check_in extends Model
 {
-     protected $fillable = [
+    // Laravel derives 'check__ins' (double underscore) from class name Check_in.
+    // The migration created 'check_ins', so we must be explicit.
+    protected $table = 'check_ins';
+
+    protected $fillable = [
         'event_id',
         'attendee_id',
         'checked_in_by',
