@@ -6,45 +6,97 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Session;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SessionController extends Controller
 {
+    /*
     public function index(Event $event)
     {
-        // Fix #15: withAvg prevents N+1 when view calls averageRating()
         $sessions = $event->sessions()
+            ->with('speakers')
             ->withCount('feedback')
             ->withAvg('feedback', 'rating')
             ->get();
 
-        return view('admin.sessions.index', compact('event', 'sessions'));
-    }
+        $speakers = User::whereHas('role', fn($q) => $q->where('name', 'speaker'))
+            ->orderBy('name')
+            ->get();
 
-    public function create(Event $event)
+        $stats = [
+            'total'    => $sessions->count(),
+            'talk'     => $sessions->where('type', 'talk')->count(),
+            'workshop' => $sessions->where('type', 'workshop')->count(),
+            'panel'    => $sessions->where('type', 'panel')->count(),
+            'break'    => $sessions->where('type', 'break')->count(),
+        ];
+
+        return view('admin.sessions.index', compact('event', 'sessions', 'speakers', 'stats'));
+    }
+*/
+    public function index(Event $event)
     {
-        $speakers = User::whereHas('role', fn($q) => $q->where('name', 'speaker'))->get();
-        return view('admin.sessions.create', compact('event', 'speakers'));
-    }
+        $sessions = $event->sessions()
+            ->with('speakers')
+            ->withCount('feedback')
+            ->withAvg('feedback', 'rating')
+            ->get();
 
-    public function store(Request $request, Event $event)
+        $speakers = User::whereHas('role', function ($q) {
+            $q->where('name', 'speaker');
+        })
+        ->orderBy('name')
+        ->get();
+
+        $stats = [
+            'total'    => $sessions->count(),
+            'talk'     => $sessions->where('type', 'talk')->count(),
+            'workshop' => $sessions->where('type', 'workshop')->count(),
+            'panel'    => $sessions->where('type', 'panel')->count(),
+            'break'    => $sessions->where('type', 'break')->count(),
+        ];
+
+        // ✅ PREPARE DATA FOR BLADE (IMPORTANT FIX)
+        $sessionsData = $sessions->map(function ($s) {
+            return $this->sessionPayload($s);
+        })->values();
+
+        $speakersData = $speakers->map(function ($s) {
+            return [
+                'id' => $s->id,
+                'name' => $s->name,
+                'company' => $s->company,
+            ];
+        })->values();
+
+        return view('admin.sessions.index', compact(
+            'event',
+            'stats',
+            'sessionsData',
+            'speakersData'
+        ));
+    }
+    /** AJAX: create a session from the slide-over panel */
+    public function store(Request $request, Event $event): JsonResponse
     {
         $validated = $request->validate([
             'title'         => 'required|string|max:255',
-            'description'   => 'nullable|string',
+            'description'   => 'nullable|string|max:2000',
             'room'          => 'nullable|string|max:100',
             'starts_at'     => 'required|date',
             'ends_at'       => 'required|date|after:starts_at',
             'type'          => 'required|in:talk,workshop,panel,break',
             'capacity'      => 'nullable|integer|min:1',
-            'sort_order'    => 'nullable|integer',
             'speaker_ids'   => 'nullable|array',
             'speaker_ids.*' => 'exists:users,id',
         ]);
 
-        // Fix #4: strip speaker_ids — it is not a column on event_sessions
-        $speakerIds = $validated['speaker_ids'] ?? [];
+        $speakerIds  = $validated['speaker_ids'] ?? [];
         $sessionData = collect($validated)->except('speaker_ids')->toArray();
+
+        // Auto sort_order: place after last existing session
+        $sessionData['sort_order'] = ($event->sessions()->max('sort_order') ?? 0) + 1;
 
         $session = $event->sessions()->create($sessionData);
 
@@ -53,49 +105,114 @@ class SessionController extends Controller
             $session->speakers()->sync($sync);
         }
 
-        return redirect()->route('admin.events.sessions.index', $event)
-            ->with('success', "Session '{$session->title}' created.");
-    }
-
-    public function edit(Event $event, Session $session)
-    {
-        $speakers = User::whereHas('role', fn($q) => $q->where('name', 'speaker'))->get();
         $session->load('speakers');
-        return view('admin.sessions.edit', compact('event', 'session', 'speakers'));
+        $session->loadCount('feedback');
+
+        return response()->json([
+            'ok'      => true,
+            'session' => $this->sessionPayload($session),
+        ]);
     }
 
-    public function update(Request $request, Event $event, Session $session)
+    /** AJAX: update a session from the slide-over panel */
+    public function update(Request $request, Event $event, Session $session): JsonResponse
     {
         $validated = $request->validate([
             'title'         => 'required|string|max:255',
-            'description'   => 'nullable|string',
+            'description'   => 'nullable|string|max:2000',
             'room'          => 'nullable|string|max:100',
             'starts_at'     => 'required|date',
             'ends_at'       => 'required|date|after:starts_at',
             'type'          => 'required|in:talk,workshop,panel,break',
             'capacity'      => 'nullable|integer|min:1',
-            'sort_order'    => 'nullable|integer',
             'speaker_ids'   => 'nullable|array',
             'speaker_ids.*' => 'exists:users,id',
         ]);
 
-        // Fix #4: strip speaker_ids before mass-assignment
-        $speakerIds = $validated['speaker_ids'] ?? [];
+        $speakerIds  = $validated['speaker_ids'] ?? [];
         $sessionData = collect($validated)->except('speaker_ids')->toArray();
 
         $session->update($sessionData);
 
         $sync = collect($speakerIds)->mapWithKeys(fn($id) => [$id => ['role' => 'speaker']]);
         $session->speakers()->sync($sync);
+        $session->load('speakers');
+        $session->loadCount('feedback');
 
-        return redirect()->route('admin.events.sessions.index', $event)
-            ->with('success', 'Session updated.');
+        return response()->json([
+            'ok'      => true,
+            'session' => $this->sessionPayload($session),
+        ]);
     }
 
-    public function destroy(Event $event, Session $session)
+    /** AJAX: delete a session */
+    public function destroy(Event $event, Session $session): JsonResponse
     {
         $session->delete();
-        return redirect()->route('admin.events.sessions.index', $event)
-            ->with('success', 'Session deleted.');
+        return response()->json(['ok' => true]);
+    }
+
+    /** AJAX: duplicate a session (same time slot, copied fields) */
+    public function duplicate(Event $event, Session $session): JsonResponse
+    {
+        $copy = $session->replicate();
+        $copy->title      = $session->title . ' (copy)';
+        $copy->sort_order = ($event->sessions()->max('sort_order') ?? 0) + 1;
+        $copy->is_highlighted = false;
+        $copy->save();
+
+        // Copy speakers
+        $speakerSync = $session->speakers->mapWithKeys(fn($s) => [$s->id => ['role' => $s->pivot->role]]);
+        $copy->speakers()->sync($speakerSync);
+        $copy->load('speakers');
+        $copy->loadCount('feedback');
+
+        return response()->json([
+            'ok'      => true,
+            'session' => $this->sessionPayload($copy),
+        ]);
+    }
+
+    /** AJAX: reorder sessions via drag-and-drop */
+    public function reorder(Request $request, Event $event): JsonResponse
+    {
+        $request->validate([
+            'order'   => 'required|array',
+            'order.*' => 'integer|exists:event_sessions,id',
+        ]);
+
+        foreach ($request->order as $position => $sessionId) {
+            $event->sessions()->where('id', $sessionId)->update(['sort_order' => $position + 1]);
+        }
+
+        return response()->json(['ok' => true]);
+    }
+
+    // ── Private ──────────────────────────────────────────────────────────
+
+    private function sessionPayload(Session $session): array
+    {
+        return [
+            'id'          => $session->id,
+            'title'       => $session->title,
+            'description' => $session->description,
+            'room'        => $session->room,
+            'starts_at'   => $session->starts_at->format('Y-m-d\TH:i'),
+            'starts_fmt'  => $session->starts_at->format('H:i'),
+            'ends_at'     => $session->ends_at->format('Y-m-d\TH:i'),
+            'ends_fmt'    => $session->ends_at->format('H:i'),
+            'type'        => $session->type,
+            'capacity'    => $session->capacity,
+            'sort_order'  => $session->sort_order,
+            'is_live'     => $session->isLive(),
+            'feedback_count'      => $session->feedback_count ?? 0,
+            'feedback_avg_rating' => round($session->feedback_avg_rating ?? 0, 1),
+            'speaker_ids' => $session->speakers->pluck('id')->toArray(),
+            'speakers'    => $session->speakers->map(fn($s) => [
+                'id'      => $s->id,
+                'name'    => $s->name,
+                'company' => $s->company,
+            ])->values()->toArray(),
+        ];
     }
 }

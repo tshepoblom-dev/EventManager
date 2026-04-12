@@ -65,14 +65,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/{attendee}/send-qr',   [AttendeeController::class, 'sendQr'])->name('send-qr');
         });
 
-        // Sessions (Phase 4)
+        // Sessions / Programme Builder
         Route::prefix('events/{event}/sessions')->name('events.sessions.')->group(function () {
-            Route::get('/',            [SessionController::class, 'index'])->name('index');
-            Route::get('/create',      [SessionController::class, 'create'])->name('create');
-            Route::post('/',           [SessionController::class, 'store'])->name('store');
-            Route::get('/{session}/edit',    [SessionController::class, 'edit'])->name('edit');
-            Route::patch('/{session}',       [SessionController::class, 'update'])->name('update');
-            Route::delete('/{session}',      [SessionController::class, 'destroy'])->name('destroy');
+            Route::get('/',                            [SessionController::class, 'index'])->name('index');
+            Route::post('/',                           [SessionController::class, 'store'])->name('store');
+            Route::patch('/reorder',                   [SessionController::class, 'reorder'])->name('reorder');
+            Route::patch('/{session}',                 [SessionController::class, 'update'])->name('update');
+            Route::delete('/{session}',                [SessionController::class, 'destroy'])->name('destroy');
+            Route::post('/{session}/duplicate',        [SessionController::class, 'duplicate'])->name('duplicate');
         });
 
         // Forms (Phase 3)

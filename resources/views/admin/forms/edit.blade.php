@@ -165,15 +165,7 @@
 <script>
 function formBuilder() {
     return {
-        fields: @json($form->fields->map(fn($f) => [
-            'id'          => $f->id,
-            'label'       => $f->label,
-            'type'        => $f->type,
-            'required'    => $f->required,
-            'placeholder' => $f->placeholder,
-            'options'     => $f->options ?? [],
-            '_key'        => $f->id,
-        ])),
+        fields: @json($fieldsData ?? []),
         newField: { label: '', type: 'text', required: false, placeholder: '', optionsRaw: '' },
         _counter: 9000,
 

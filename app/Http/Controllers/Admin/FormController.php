@@ -40,11 +40,24 @@ class FormController extends Controller
         return redirect()->route('admin.events.forms.edit', [$event, $form])
             ->with('success', 'Form created. Now add your fields below.');
     }
-
+    
     public function edit(Event $event, Form $form)
     {
         $form->load(['fields' => fn($q) => $q->orderBy('sort_order')]);
-        return view('admin.forms.edit', compact('event', 'form'));
+
+        $fieldsData = $form->fields->map(function ($f) {
+            return [
+                'id'          => $f->id,
+                'label'       => $f->label,
+                'type'        => $f->type,
+                'required'    => (bool) $f->required,
+                'placeholder' => $f->placeholder,
+                'options'     => $f->options ?? [],
+                '_key'        => $f->id,
+            ];
+        })->values();
+
+        return view('admin.forms.edit', compact('event', 'form', 'fieldsData'));
     }
 
     public function update(Request $request, Event $event, Form $form)
