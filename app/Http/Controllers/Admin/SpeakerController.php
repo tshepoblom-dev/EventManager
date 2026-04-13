@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendee;
+use App\Models\Event;
 use App\Models\Speaker;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -13,7 +14,8 @@ class SpeakerController extends Controller
 {
     public function index(Request $request)
     {
-        $speakers = Speaker::with(['user', 'attendee'])
+        $speakers = Speaker::with(['event', 'user', 'attendee'])
+            ->when($request->event_id, fn($q, $id) => $q->where('event_id', $id))
             ->when($request->search, fn($q, $s) =>
                 $q->where('name', 'like', "%{$s}%")
                   ->orWhere('email', 'like', "%{$s}%")
@@ -23,11 +25,21 @@ class SpeakerController extends Controller
             ->paginate(25)
             ->withQueryString();
 
-        return view('admin.speakers.index', compact('speakers'));
+        $currentEvent = $request->event_id
+            ? \App\Models\Event::find($request->event_id)
+            : null;
+
+        return view('admin.speakers.index', compact('speakers', 'currentEvent'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        $events = Event::orderBy('event_date', 'desc')->orderBy('name')->get();
+
+        $currentEvent = $request->event_id
+            ? Event::find($request->event_id)
+            : null;
+
         // Attendees who don't yet have a speaker profile
         $attendees = Attendee::doesntHave('speaker')
             ->orderBy('first_name')
@@ -39,12 +51,13 @@ class SpeakerController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('admin.speakers.create', compact('attendees', 'users'));
+        return view('admin.speakers.create', compact('events', 'currentEvent', 'attendees', 'users'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'event_id'    => 'nullable|exists:events,id',
             'name'        => 'required|string|max:255',
             'email'       => 'nullable|email|max:255',
             'title'       => 'nullable|string|max:255',
@@ -79,8 +92,12 @@ class SpeakerController extends Controller
                          ->with('success', 'Speaker profile created.');
     }
 
-    public function edit(Speaker $speaker)
+    public function edit(Speaker $speaker, Request $request)
     {
+        $events = Event::orderBy('event_date', 'desc')->orderBy('name')->get();
+
+        $currentEvent = $speaker->event ?? ($request->event_id ? Event::find($request->event_id) : null);
+
         $attendees = Attendee::doesntHave('speaker')
             ->orWhere('id', $speaker->attendee_id)
             ->orderBy('first_name')
@@ -94,12 +111,13 @@ class SpeakerController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('admin.speakers.edit', compact('speaker', 'attendees', 'users'));
+        return view('admin.speakers.edit', compact('events', 'speaker', 'attendees', 'users', 'currentEvent'));
     }
 
     public function update(Request $request, Speaker $speaker)
     {
         $validated = $request->validate([
+            'event_id'    => 'nullable|exists:events,id',
             'name'        => 'required|string|max:255',
             'email'       => 'nullable|email|max:255',
             'title'       => 'nullable|string|max:255',

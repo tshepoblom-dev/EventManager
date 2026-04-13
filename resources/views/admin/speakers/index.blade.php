@@ -1,9 +1,11 @@
 @extends('layouts.admin')
 @section('title', 'Speakers')
-@section('page-title', 'Speakers')
+@section('page-title', 'Speakers' . ($currentEvent ? ' — ' . $currentEvent->name : ''))
+
+@php $event = $currentEvent ?? null; @endphp
 
 @push('header-actions')
-<a href="{{ route('admin.speakers.create') }}"
+<a href="{{ route('admin.speakers.create', $currentEvent ? ['event_id' => $currentEvent->id] : []) }}"
    class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -15,6 +17,9 @@
 @section('content')
 {{-- Search --}}
 <form method="GET" class="flex gap-3 mb-5">
+    @if($currentEvent)
+    <input type="hidden" name="event_id" value="{{ $currentEvent->id }}">
+    @endif
     <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name, email or title…"
         class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
     <button type="submit" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">Search</button>
@@ -48,6 +53,12 @@
 
         {{-- Links badges --}}
         <div class="flex flex-wrap gap-1.5">
+            @if($speaker->event)
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                {{ $speaker->event->name }}
+            </span>
+            @endif
             @if($speaker->attendee)
             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>

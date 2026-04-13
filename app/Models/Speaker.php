@@ -9,11 +9,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Speaker extends Model
 {
     protected $fillable = [
-        'user_id', 'attendee_id', 'name', 'email',
+        'event_id', 'user_id', 'attendee_id', 'name', 'email',
         'title', 'bio', 'photo', 'linkedin', 'twitter',
     ];
 
     // ── Relations ──────────────────────────────────────────────────────
+
+    /** The Event this speaker belongs to. */
+    public function event(): BelongsTo
+    {
+        return $this->belongsTo(Event::class);
+    }
 
     /** The User account associated with this speaker (optional). */
     public function user(): BelongsTo

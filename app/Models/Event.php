@@ -16,6 +16,7 @@ class Event extends Model
     protected $casts = ['event_date' => 'date'];
 
     public function attendees(): HasMany    { return $this->hasMany(Attendee::class); }
+    public function speakers(): HasMany     { return $this->hasMany(Speaker::class); }
     public function sessions(): HasMany     { return $this->hasMany(Session::class)->orderBy('starts_at'); }
     public function sponsors(): HasMany     { return $this->hasMany(Sponsor::class); }
     public function checkIns(): HasMany     { return $this->hasMany(Check_in::class); }
