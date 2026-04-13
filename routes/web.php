@@ -16,10 +16,12 @@ use App\Http\Controllers\Speaker\SessionController as SpeakerSessionController;
 use App\Http\Controllers\Sponsor\LeadController as SponsorLeadController;
 use App\Http\Controllers\Staff\CheckInController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ImportController;
 
 // ── Public ──────────────────────────────────────────────────────────────
 Route::get('/', fn() => view('welcome'));
 
+Route::get('/import-csv', [ImportController::class, 'import']);
 // Public programme (read-only, no auth)
 Route::get('/events/{event}/programme', [ProgrammeController::class, 'index'])->name('programme.index');
 
