@@ -14,17 +14,17 @@ class Attendee extends Model
         'email', 'phone', 'company', 'job_title',
         'ticket_type', 'status', 'qr_code',
         'qr_image_path', 'qr_emailed', 'source',
+        'invite_token', 'invite_sent_at',
     ];
 
-    // Fix #19: qr_emailed must be cast to boolean — without this, comparisons
-    // behave inconsistently across DB drivers (e.g. "0" !== false in SQLite).
     protected $casts = [
-        'qr_emailed' => 'boolean',
+        'qr_emailed'     => 'boolean',
+        'invite_sent_at' => 'datetime',
     ];
 
-    // Fix #20: $appends ensures full_name appears in JSON responses from the
-    // check-in API and networking endpoints without extra ->append() calls.
     protected $appends = ['full_name'];
+
+    // ── Relations ──────────────────────────────────────────────────────
 
     public function event(): BelongsTo    { return $this->belongsTo(Event::class); }
     public function user(): BelongsTo     { return $this->belongsTo(User::class); }
@@ -32,22 +32,47 @@ class Attendee extends Model
     public function feedback(): HasMany   { return $this->hasMany(Feedback::class); }
     public function leads(): HasMany      { return $this->hasMany(Lead::class); }
     public function registration(): HasOne { return $this->hasOne(Registration::class); }
+    public function speaker(): HasOne     { return $this->hasOne(Speaker::class); }
+
+    // ── Accessors ──────────────────────────────────────────────────────
 
     public function getFullNameAttribute(): string
     {
         return "{$this->first_name} {$this->last_name}";
     }
 
-    /**
-     * Fix #25: Check relationLoaded() first to avoid an extra query when the
-     * checkIn relation has already been eager-loaded (e.g. in searchCheckIn).
-     */
+    // ── Helpers ────────────────────────────────────────────────────────
+
     public function isCheckedIn(): bool
     {
         if ($this->relationLoaded('checkIn')) {
             return $this->checkIn !== null;
         }
-
         return $this->checkIn()->exists();
+    }
+
+    public function hasAccount(): bool
+    {
+        return $this->user_id !== null;
+    }
+
+    public function hasPendingInvite(): bool
+    {
+        return $this->invite_token !== null && $this->user_id === null;
+    }
+
+    public function generateInviteToken(): string
+    {
+        $token = bin2hex(random_bytes(32));
+        $this->update([
+            'invite_token'   => $token,
+            'invite_sent_at' => now(),
+        ]);
+        return $token;
+    }
+
+    public function clearInviteToken(): void
+    {
+        $this->update(['invite_token' => null]);
     }
 }

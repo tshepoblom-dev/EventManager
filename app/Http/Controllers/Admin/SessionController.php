@@ -5,13 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Session;
-use App\Models\User;
+use App\Models\Speaker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SessionController extends Controller
 {
-    /*
     public function index(Event $event)
     {
         $sessions = $event->sessions()
@@ -20,9 +19,8 @@ class SessionController extends Controller
             ->withAvg('feedback', 'rating')
             ->get();
 
-        $speakers = User::whereHas('role', fn($q) => $q->where('name', 'speaker'))
-            ->orderBy('name')
-            ->get();
+        // All speaker profiles (not just those with user accounts)
+        $speakers = Speaker::orderBy('name')->get();
 
         $stats = [
             'total'    => $sessions->count(),
@@ -32,52 +30,21 @@ class SessionController extends Controller
             'break'    => $sessions->where('type', 'break')->count(),
         ];
 
-        return view('admin.sessions.index', compact('event', 'sessions', 'speakers', 'stats'));
-    }
-*/
-    public function index(Event $event)
-    {
-        $sessions = $event->sessions()
-            ->with('speakers')
-            ->withCount('feedback')
-            ->withAvg('feedback', 'rating')
-            ->get();
+        $sessionsData = $sessions->map(fn($s) => $this->sessionPayload($s))->values();
 
-        $speakers = User::whereHas('role', function ($q) {
-            $q->where('name', 'speaker');
-        })
-        ->orderBy('name')
-        ->get();
-
-        $stats = [
-            'total'    => $sessions->count(),
-            'talk'     => $sessions->where('type', 'talk')->count(),
-            'workshop' => $sessions->where('type', 'workshop')->count(),
-            'panel'    => $sessions->where('type', 'panel')->count(),
-            'break'    => $sessions->where('type', 'break')->count(),
-        ];
-
-        // ✅ PREPARE DATA FOR BLADE (IMPORTANT FIX)
-        $sessionsData = $sessions->map(function ($s) {
-            return $this->sessionPayload($s);
-        })->values();
-
-        $speakersData = $speakers->map(function ($s) {
-            return [
-                'id' => $s->id,
-                'name' => $s->name,
-                'company' => $s->company,
-            ];
-        })->values();
+        $speakersData = $speakers->map(fn($s) => [
+            'id'      => $s->id,
+            'name'    => $s->name,
+            'title'   => $s->title,
+            'display' => $s->display_name,
+        ])->values();
 
         return view('admin.sessions.index', compact(
-            'event',
-            'stats',
-            'sessionsData',
-            'speakersData'
+            'event', 'stats', 'sessionsData', 'speakersData'
         ));
     }
-    /** AJAX: create a session from the slide-over panel */
+
+    /** AJAX: create a session */
     public function store(Request $request, Event $event): JsonResponse
     {
         $validated = $request->validate([
@@ -89,22 +56,17 @@ class SessionController extends Controller
             'type'          => 'required|in:talk,workshop,panel,break',
             'capacity'      => 'nullable|integer|min:1',
             'speaker_ids'   => 'nullable|array',
-            'speaker_ids.*' => 'exists:users,id',
+            'speaker_ids.*' => 'exists:speakers,id',
         ]);
 
         $speakerIds  = $validated['speaker_ids'] ?? [];
         $sessionData = collect($validated)->except('speaker_ids')->toArray();
-
-        // Auto sort_order: place after last existing session
         $sessionData['sort_order'] = ($event->sessions()->max('sort_order') ?? 0) + 1;
 
         $session = $event->sessions()->create($sessionData);
 
-        if ($speakerIds) {
-            $sync = collect($speakerIds)->mapWithKeys(fn($id) => [$id => ['role' => 'speaker']]);
-            $session->speakers()->sync($sync);
-        }
-
+        $sync = collect($speakerIds)->mapWithKeys(fn($id) => [$id => ['role' => 'speaker']]);
+        $session->speakers()->sync($sync);
         $session->load('speakers');
         $session->loadCount('feedback');
 
@@ -114,7 +76,7 @@ class SessionController extends Controller
         ]);
     }
 
-    /** AJAX: update a session from the slide-over panel */
+    /** AJAX: update a session */
     public function update(Request $request, Event $event, Session $session): JsonResponse
     {
         $validated = $request->validate([
@@ -126,7 +88,7 @@ class SessionController extends Controller
             'type'          => 'required|in:talk,workshop,panel,break',
             'capacity'      => 'nullable|integer|min:1',
             'speaker_ids'   => 'nullable|array',
-            'speaker_ids.*' => 'exists:users,id',
+            'speaker_ids.*' => 'exists:speakers,id',
         ]);
 
         $speakerIds  = $validated['speaker_ids'] ?? [];
@@ -152,16 +114,15 @@ class SessionController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    /** AJAX: duplicate a session (same time slot, copied fields) */
+    /** AJAX: duplicate a session */
     public function duplicate(Event $event, Session $session): JsonResponse
     {
         $copy = $session->replicate();
-        $copy->title      = $session->title . ' (copy)';
-        $copy->sort_order = ($event->sessions()->max('sort_order') ?? 0) + 1;
+        $copy->title       = $session->title . ' (copy)';
+        $copy->sort_order  = ($event->sessions()->max('sort_order') ?? 0) + 1;
         $copy->is_highlighted = false;
         $copy->save();
 
-        // Copy speakers
         $speakerSync = $session->speakers->mapWithKeys(fn($s) => [$s->id => ['role' => $s->pivot->role]]);
         $copy->speakers()->sync($speakerSync);
         $copy->load('speakers');
@@ -173,7 +134,7 @@ class SessionController extends Controller
         ]);
     }
 
-    /** AJAX: reorder sessions via drag-and-drop */
+    /** AJAX: reorder sessions */
     public function reorder(Request $request, Event $event): JsonResponse
     {
         $request->validate([
@@ -188,7 +149,7 @@ class SessionController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    // ── Private ──────────────────────────────────────────────────────────
+    // ── Private ──────────────────────────────────────────────────────────────
 
     private function sessionPayload(Session $session): array
     {
@@ -209,9 +170,9 @@ class SessionController extends Controller
             'feedback_avg_rating' => round($session->feedback_avg_rating ?? 0, 1),
             'speaker_ids' => $session->speakers->pluck('id')->toArray(),
             'speakers'    => $session->speakers->map(fn($s) => [
-                'id'      => $s->id,
-                'name'    => $s->name,
-                'company' => $s->company,
+                'id'    => $s->id,
+                'name'  => $s->name,
+                'title' => $s->title,
             ])->values()->toArray(),
         ];
     }

@@ -283,7 +283,7 @@ const EVENT_DATE = '{{ $event->event_date->format('Y-m-d') }}';
                                    class="w-4 h-4 text-blue-600 border-gray-300 rounded">
                             <div class="min-w-0">
                                 <p class="text-xs font-medium text-gray-800" x-text="sp.name"></p>
-                                <p x-show="sp.company" class="text-xs text-gray-400" x-text="sp.company"></p>
+                                <p x-show="sp.title" class="text-xs text-gray-400" x-text="sp.title"></p>
                             </div>
                         </label>
                     </template>

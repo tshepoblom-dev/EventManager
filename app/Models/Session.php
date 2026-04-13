@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Session extends Model
 {
-    // Avoids collision with Laravel's built-in 'sessions' table
     protected $table = 'event_sessions';
 
     protected $fillable = [
@@ -31,15 +30,17 @@ class Session extends Model
 
     public function feedback(): HasMany
     {
-        // FK is 'event_session_id' per migration
         return $this->hasMany(Feedback::class, 'event_session_id');
     }
 
+    /**
+     * Speakers are now linked via the Speaker model.
+     * We keep the user_id on the pivot for backward compatibility.
+     */
     public function speakers(): BelongsToMany
     {
-        // Migration created 'session_speakers' table with 'event_session_id' FK
-        return $this->belongsToMany(User::class, 'session_speakers', 'event_session_id', 'user_id')
-                    ->withPivot('role')
+        return $this->belongsToMany(Speaker::class, 'session_speakers', 'event_session_id', 'speaker_id')
+                    ->withPivot('role', 'user_id')
                     ->withTimestamps();
     }
 

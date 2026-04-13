@@ -3,6 +3,14 @@
 @section('page-title', 'Attendees')
 
 @push('header-actions')
+    <form method="POST" action="{{ route('admin.attendees.invite-bulk') }}" id="bulk-invite-form">
+        @csrf
+        <div id="bulk-invite-ids"></div>
+        <button type="submit" id="bulk-invite-btn"
+            class="hidden inline-flex items-center gap-2 px-4 py-2 border border-blue-300 text-blue-700 text-sm font-medium rounded-lg hover:bg-blue-50 transition-colors">
+            Send invites to selected
+        </button>
+    </form>
     <a href="{{ route('admin.events.attendees.import', $event) }}"
        class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 text-sm text-gray-600 rounded-lg hover:bg-gray-50 transition-colors">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

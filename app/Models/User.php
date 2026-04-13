@@ -2,19 +2,19 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
     protected $fillable = [
         'name', 'email', 'password',
         'role_id', 'phone', 'company',
@@ -29,10 +29,26 @@ class User extends Authenticatable
         'networking_opt_in' => 'boolean',
     ];
 
+    // ── Relations ──────────────────────────────────────────────────────
+
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
     }
+
+    /** All attendee records linked to this user account. */
+    public function attendees(): HasMany
+    {
+        return $this->hasMany(Attendee::class);
+    }
+
+    /** Speaker profile linked to this user (if any). */
+    public function speaker(): HasOne
+    {
+        return $this->hasOne(Speaker::class);
+    }
+
+    // ── Role helpers ───────────────────────────────────────────────────
 
     public function hasRole(string $role): bool
     {
@@ -42,14 +58,6 @@ class User extends Authenticatable
     public function hasAnyRole(array $roles): bool
     {
         return in_array($this->role?->name, $roles);
-    }
-
-    public function sessions()
-    {
-        // Table is 'session_speakers' (plural) — matches the migration definition
-        return $this->belongsToMany(Session::class, 'session_speakers', 'user_id', 'event_session_id')
-            ->withPivot('role')
-            ->withTimestamps();
     }
 
     public function isAdmin(): bool    { return $this->hasRole('admin'); }
