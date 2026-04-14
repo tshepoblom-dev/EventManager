@@ -32,9 +32,7 @@
         <p class="text-sm font-semibold text-blue-800">Link to existing record (optional)</p>
         <p class="text-xs text-blue-700">Linking to an attendee or user account means this speaker can also check in at the venue and log into the platform.</p>
 
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Attendee record</label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <select name="attendee_id"
                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">— none —</option>
@@ -63,7 +61,7 @@
     </div>
 
     {{-- Core profile --}}
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Display name <span class="text-red-500">*</span></label>
             <input type="text" name="name" value="{{ old('name', $speaker->name ?? '') }}" required
@@ -92,7 +90,7 @@
             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none">{{ old('bio', $speaker->bio ?? '') }}</textarea>
     </div>
 
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">LinkedIn URL</label>
             <input type="url" name="linkedin" value="{{ old('linkedin', $speaker->linkedin ?? '') }}"

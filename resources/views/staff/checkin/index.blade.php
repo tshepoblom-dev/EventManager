@@ -14,7 +14,7 @@
     <div class="space-y-4">
 
         {{-- Live stats strip --}}
-        <div class="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-6">
+        <div class="bg-white rounded-xl border border-gray-200 p-4 flex flex-wrap items-center gap-4">
             <div class="text-center">
                 <p class="text-2xl font-bold text-green-700 tabular-nums" id="stat-checked">{{ $stats['checked_in'] }}</p>
                 <p class="text-xs text-gray-500">Checked in</p>
@@ -24,7 +24,7 @@
                 <p class="text-2xl font-bold text-gray-800 tabular-nums" id="stat-total">{{ $stats['total'] }}</p>
                 <p class="text-xs text-gray-500">Registered</p>
             </div>
-            <div class="flex-1">
+            <div class="flex-1 min-w-48">
                 <div class="flex justify-between text-xs text-gray-500 mb-1">
                     <span>Progress</span>
                     <span id="stat-pct">

@@ -30,7 +30,7 @@
         <div class="px-6 py-5 border-b border-red-100">
             <h2 class="text-sm font-semibold text-red-700">Danger Zone</h2>
         </div>
-        <div class="px-6 py-5 flex items-center justify-between">
+        <div class="px-6 py-5 flex flex-wrap items-center justify-between gap-4">
             <div>
                 <p class="text-sm font-medium text-gray-900">Delete this event</p>
                 <p class="text-xs text-gray-500 mt-0.5">This will permanently delete all attendees, check-ins, and data.</p>

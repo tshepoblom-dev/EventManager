@@ -18,7 +18,7 @@ $interestColors = ['hot'=>'bg-red-100 text-red-700','warm'=>'bg-orange-100 text-
 @endphp
 
 {{-- Stats --}}
-<div class="grid grid-cols-4 gap-4 mb-5">
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
     @foreach([['Total','total','text-gray-900'],['Hot','hot','text-red-700'],['New','new','text-blue-700'],['Paid','paid','text-green-700']] as [$l,$k,$c])
     <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
         <p class="text-2xl font-bold {{ $c }} tabular-nums">{{ $stats[$k] }}</p>

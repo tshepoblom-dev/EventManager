@@ -27,13 +27,13 @@ const INITIAL_SESSIONS = @json($sessionsData ?? []);
 const EVENT_DATE = '{{ $event->event_date->format('Y-m-d') }}';
 </script>
 
-<div x-data="programmBuilder()" x-init="init()" class="flex gap-5 h-full" style="min-height:0">
+<div x-data="programmBuilder()" x-init="init()" class="flex gap-5 h-full min-h-0">
 
 {{-- ── Left: session list ─────────────────────────────────────────────── --}}
-<div class="flex-1 flex flex-col min-w-0" style="min-height:0">
+<div class="flex-1 flex flex-col min-w-0 min-h-0">
 
     {{-- Stats bar --}}
-    <div class="grid grid-cols-5 gap-3 mb-4">
+    <div class="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-4">
         @foreach([
             ['Total',    $stats['total'],    'text-gray-900',   'bg-white'],
             ['Talks',    $stats['talk'],     'text-blue-700',   'bg-blue-50'],
@@ -49,19 +49,19 @@ const EVENT_DATE = '{{ $event->event_date->format('Y-m-d') }}';
     </div>
 
     {{-- Filter tabs + Add button --}}
-    <div class="flex items-center justify-between mb-3 gap-3">
-        <div class="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1">
+    <div class="flex flex-wrap items-center justify-between mb-3 gap-3">
+        <div class="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1 overflow-x-auto flex-shrink-0">
             <template x-for="tab in ['all','talk','workshop','panel','break']" :key="tab">
                 <button @click="filter = tab"
                         :class="filter === tab
                             ? 'bg-blue-600 text-white shadow-sm'
                             : 'text-gray-500 hover:text-gray-800'"
-                        class="px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-all"
+                        class="px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-all whitespace-nowrap"
                         x-text="tab === 'all' ? 'All types' : tab"></button>
             </template>
         </div>
         <button @click="openPanel()"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+                class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm flex-shrink-0">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             Add Session
         </button>
@@ -189,10 +189,29 @@ const EVENT_DATE = '{{ $event->event_date->format('Y-m-d') }}';
     </div>
 </div>
 
-{{-- ── Right: slide-over panel ────────────────────────────────────────── --}}
-<div class="flex-shrink-0 transition-all duration-300 ease-in-out"
-     :class="panelOpen ? 'w-96' : 'w-0 overflow-hidden'">
-    <div class="w-96 bg-white border border-gray-200 rounded-xl h-full flex flex-col shadow-sm" style="min-height:0">
+{{-- ── Right: slide-over panel ─────────────────────────────────────── --}}
+{{-- Mobile backdrop --}}
+<div class="fixed inset-0 bg-black/40 z-30 lg:hidden"
+     x-show="panelOpen"
+     x-transition:enter="transition-opacity ease-out duration-200"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition-opacity ease-in duration-150"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @click="closePanel()"></div>
+
+{{-- Panel: bottom sheet on mobile, side panel on desktop --}}
+<div class="fixed bottom-0 inset-x-0 z-40 transition-all duration-300 ease-in-out
+            lg:relative lg:bottom-auto lg:inset-x-auto lg:z-auto lg:flex-shrink-0"
+     :class="{
+         'translate-y-0': panelOpen,
+         'translate-y-full lg:translate-y-0': !panelOpen,
+         'lg:w-96': panelOpen,
+         'lg:w-0 lg:overflow-hidden': !panelOpen,
+     }">
+    <div class="w-full lg:w-96 bg-white rounded-t-2xl lg:rounded-xl border-t lg:border border-gray-200
+                flex flex-col shadow-2xl lg:shadow-sm max-h-[85vh] lg:max-h-none lg:h-full overflow-hidden">
 
         {{-- Panel header --}}
         <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">

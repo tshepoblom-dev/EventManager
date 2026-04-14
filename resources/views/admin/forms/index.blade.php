@@ -23,9 +23,9 @@
     <table class="w-full text-sm">
         <thead><tr class="border-b border-gray-100">
             <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Form</th>
-            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Type</th>
-            <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Responses</th>
-            <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Active</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden sm:table-cell">Type</th>
+            <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden sm:table-cell">Responses</th>
+            <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden md:table-cell">Active</th>
             <th class="px-5 py-3"></th>
         </tr></thead>
         <tbody class="divide-y divide-gray-50">
@@ -35,13 +35,13 @@
                 <p class="font-medium text-gray-900">{{ $form->title }}</p>
                 @if($form->description)<p class="text-xs text-gray-400 truncate max-w-xs">{{ $form->description }}</p>@endif
             </td>
-            <td class="px-5 py-3.5">
+            <td class="px-5 py-3.5 hidden sm:table-cell">
                 <span class="text-xs px-2 py-0.5 rounded font-medium {{ $typeColors[$form->type] ?? 'bg-gray-100 text-gray-600' }}">
                     {{ str_replace('_',' ',ucfirst($form->type)) }}
                 </span>
             </td>
-            <td class="px-5 py-3.5 text-center tabular-nums text-gray-700">{{ $form->responses_count }}</td>
-            <td class="px-5 py-3.5 text-center">
+            <td class="px-5 py-3.5 text-center tabular-nums text-gray-700 hidden sm:table-cell">{{ $form->responses_count }}</td>
+            <td class="px-5 py-3.5 text-center hidden md:table-cell">
                 @if($form->is_active)
                 <span class="inline-flex items-center gap-1 text-xs text-green-700"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>Active</span>
                 @else
@@ -49,7 +49,7 @@
                 @endif
             </td>
             <td class="px-5 py-3.5">
-                <div class="flex items-center justify-end gap-2">
+                <div class="flex items-center justify-end gap-2 flex-wrap">
                     <a href="{{ route('forms.show', $form) }}" target="_blank"
                        class="text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">Preview</a>
                     <a href="{{ route('admin.events.forms.show', [$event, $form]) }}"

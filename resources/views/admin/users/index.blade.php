@@ -14,7 +14,7 @@
 
 @section('content')
 {{-- Filters --}}
-<form method="GET" class="flex gap-3 mb-5">
+<form method="GET" class="flex flex-wrap gap-3 mb-5">
     <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name or email…"
         class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
     <select name="role" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -36,9 +36,9 @@
         <thead>
             <tr class="border-b border-gray-100 bg-gray-50">
                 <th class="text-left px-4 py-3 font-medium text-gray-600">Name</th>
-                <th class="text-left px-4 py-3 font-medium text-gray-600">Email</th>
+                <th class="text-left px-4 py-3 font-medium text-gray-600 hidden md:table-cell">Email</th>
                 <th class="text-left px-4 py-3 font-medium text-gray-600">Role</th>
-                <th class="text-left px-4 py-3 font-medium text-gray-600">Joined</th>
+                <th class="text-left px-4 py-3 font-medium text-gray-600 hidden md:table-cell">Joined</th>
                 <th class="px-4 py-3"></th>
             </tr>
         </thead>
@@ -53,7 +53,7 @@
                         <span class="font-medium text-gray-900">{{ $user->name }}</span>
                     </div>
                 </td>
-                <td class="px-4 py-3 text-gray-600">{{ $user->email }}</td>
+                <td class="px-4 py-3 text-gray-600 hidden md:table-cell">{{ $user->email }}</td>
                 <td class="px-4 py-3">
                     @php
                     $roleColors = [
@@ -69,7 +69,7 @@
                         {{ $user->role?->display_name ?? 'No role' }}
                     </span>
                 </td>
-                <td class="px-4 py-3 text-gray-500">{{ $user->created_at->format('d M Y') }}</td>
+                <td class="px-4 py-3 text-gray-500 hidden md:table-cell">{{ $user->created_at->format('d M Y') }}</td>
                 <td class="px-4 py-3">
                     <div class="flex items-center justify-end gap-2">
                         <a href="{{ route('admin.users.edit', $user) }}"

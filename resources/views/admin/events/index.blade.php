@@ -35,10 +35,10 @@
             <thead>
                 <tr class="border-b border-gray-100">
                     <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Event</th>
-                    <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Date</th>
+                    <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden sm:table-cell">Date</th>
                     <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                    <th class="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Attendees</th>
-                    <th class="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Checked In</th>
+                    <th class="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden md:table-cell">Attendees</th>
+                    <th class="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden md:table-cell">Checked In</th>
                     <th class="px-5 py-3"></th>
                 </tr>
             </thead>
@@ -51,7 +51,7 @@
                             <p class="text-xs text-gray-400 mt-0.5">{{ $event->venue }}</p>
                         @endif
                     </td>
-                    <td class="px-5 py-4 text-gray-600">
+                    <td class="px-5 py-4 text-gray-600 hidden sm:table-cell">
                         {{ $event->event_date->format('d M Y') }}
                     </td>
                     <td class="px-5 py-4">
@@ -62,8 +62,8 @@
                             {{ ucfirst($event->status) }}
                         </span>
                     </td>
-                    <td class="px-5 py-4 text-right tabular-nums text-gray-700">{{ number_format($event->attendees_count) }}</td>
-                    <td class="px-5 py-4 text-right tabular-nums text-gray-700">{{ number_format($event->check_ins_count) }}</td>
+                    <td class="px-5 py-4 text-right tabular-nums text-gray-700 hidden md:table-cell">{{ number_format($event->attendees_count) }}</td>
+                    <td class="px-5 py-4 text-right tabular-nums text-gray-700 hidden md:table-cell">{{ number_format($event->check_ins_count) }}</td>
                     <td class="px-5 py-4">
                         <div class="flex items-center justify-end gap-2">
                             <a href="{{ route('admin.events.show', $event) }}"

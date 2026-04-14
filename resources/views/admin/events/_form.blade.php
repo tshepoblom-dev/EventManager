@@ -34,7 +34,7 @@
     </div>
 
     {{-- Times --}}
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Start time <span class="text-red-500">*</span></label>
             <input type="time" name="start_time" value="{{ old('start_time', $event->start_time ?? '') }}"
@@ -56,7 +56,7 @@
     </div>
 
     {{-- Status + Colour row --}}
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Status <span class="text-red-500">*</span></label>
             <select name="status"

@@ -47,7 +47,7 @@
 
 {{-- Filter bar --}}
 <form method="GET" class="bg-white rounded-xl border border-gray-200 p-4 mb-4 flex flex-wrap gap-3 items-end">
-    <div class="flex-1 min-w-48">
+    <div class="w-full sm:flex-1 sm:min-w-48">
         <label class="block text-xs font-medium text-gray-600 mb-1">Search</label>
         <input type="text" name="search" value="{{ request('search') }}"
                placeholder="Name, email, company…"

@@ -13,7 +13,7 @@
         </span>
         @if(count($events) > 1)
         <select onchange="location = this.value"
-                class="text-xs px-2 py-1.5 border border-gray-200 rounded-lg bg-white focus:outline-none">
+                class="text-xs px-2 py-1.5 border border-gray-200 rounded-lg bg-white focus:outline-none max-w-[160px] truncate">
             @foreach($events as $e)
             <option value="{{ route('dashboard') }}?event={{ $e->id }}" {{ $event->id===$e->id?'selected':'' }}>
                 {{ $e->name }}

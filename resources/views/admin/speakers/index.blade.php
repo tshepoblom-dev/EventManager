@@ -16,7 +16,7 @@
 
 @section('content')
 {{-- Search --}}
-<form method="GET" class="flex gap-3 mb-5">
+<form method="GET" class="flex flex-wrap gap-3 mb-5">
     @if($currentEvent)
     <input type="hidden" name="event_id" value="{{ $currentEvent->id }}">
     @endif

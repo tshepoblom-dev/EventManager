@@ -606,10 +606,10 @@
         'transport' => 'smtp',
         'scheme' => NULL,
         'url' => NULL,
-        'host' => '127.0.0.1',
-        'port' => '2525',
-        'username' => NULL,
-        'password' => NULL,
+        'host' => 'mail.lumkosoftware.africa',
+        'port' => '465',
+        'username' => 'scaleup@lumkosoftware.africa',
+        'password' => 'Scale@2026',
         'timeout' => NULL,
         'local_domain' => 'localhost',
       ),
@@ -662,7 +662,7 @@
     ),
     'from' => 
     array (
-      'address' => 'hello@example.com',
+      'address' => 'scaleup@lumkosoftware.africa',
       'name' => 'Laravel',
     ),
     'markdown' => 

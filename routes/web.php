@@ -74,8 +74,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         // Invite attendees to create user accounts (event-agnostic, attendee-scoped)
-        Route::post('attendees/{attendee}/invite', [UserController::class, 'inviteAttendee'])
-            ->name('attendees.invite');
+       // Route::post('attendees/{attendee}/invite', [UserController::class, 'inviteAttendee'])
+         //   ->name('attendees.invite');
         Route::post('attendees/invite-bulk', [UserController::class, 'inviteAttendeeBulk'])
             ->name('attendees.invite-bulk');
 

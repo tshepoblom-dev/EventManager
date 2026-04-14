@@ -154,7 +154,7 @@
                         <p class="text-xs text-amber-700">{{ $attendee->invite_sent_at->format('d M Y H:i') }}</p>
                     </div>
                 </div>
-                <form method="POST" action="{{ route('admin.attendees.invite', $attendee) }}">
+                <form method="POST" action="{{ route('staff.attendees.invite', $attendee) }}">
                     @csrf
                     <button type="submit"
                         class="w-full px-3 py-2 text-sm text-amber-700 border border-amber-300 rounded-lg hover:bg-amber-50">
@@ -163,7 +163,7 @@
                 </form>
             @else
                 <p class="text-sm text-gray-500 mb-3">This attendee does not have a platform account yet.</p>
-                <form method="POST" action="{{ route('admin.attendees.invite', $attendee) }}">
+                <form method="POST" action="{{ route('staff.attendees.invite', $attendee) }}">
                     @csrf
                     <button type="submit"
                         class="w-full px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
@@ -176,7 +176,7 @@
         {{-- Danger zone --}}
         <div class="bg-white rounded-xl border border-red-200 p-6">
             <p class="text-xs font-semibold text-red-500 uppercase tracking-wide mb-3">Danger Zone</p>
-            <div class="flex items-center justify-between">
+            <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <p class="text-sm font-medium text-gray-900">Remove attendee</p>
                     <p class="text-xs text-gray-500 mt-0.5">Deletes their check-in and QR code.</p>

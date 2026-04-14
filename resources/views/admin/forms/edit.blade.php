@@ -16,8 +16,8 @@
 @section('content')
 <div class="grid grid-cols-1 lg:grid-cols-5 gap-6" x-data="formBuilder()" x-init="init()">
 
-{{-- Left: Form settings --}}
-<div class="lg:col-span-2 space-y-4">
+{{-- Left: Form settings (order-2 on mobile so field list appears first) --}}
+<div class="lg:col-span-2 space-y-4 order-2 lg:order-1">
     <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100">
             <h2 class="text-sm font-semibold text-gray-900">Form settings</h2>
@@ -108,7 +108,7 @@
 </div>
 
 {{-- Right: field list --}}
-<div class="lg:col-span-3">
+<div class="lg:col-span-3 order-1 lg:order-2">
     <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 class="text-sm font-semibold text-gray-900">Fields</h2>
